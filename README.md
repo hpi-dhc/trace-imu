@@ -32,8 +32,12 @@ For further preparation we decrease the window size, which allows a faster activ
 
 ### Image Classification
 
-fastAI --> resnet32 or resnet50 transfer learning, just last layer train again
+Image classification is done by the deep learning library fastAI. We used a pretained resnet32 (or resnet50) as a basis (transfer learning) and just trained the last layer.
 
 ### Sequencing
 
-Overlapping images --> HMM, LSTM
+To make sure that it classifies the right activity we tried different overlapping window sizes (2, 4, 8, ... sec). The more it was concluded the same activity the higher the likelood of having the right activity. (HMM, LSTM)?
+
+## Conclusion
+
+Faster, more accurate, less parameters, less training time, ...? It has to be compared with state-of-the-art solutions.
