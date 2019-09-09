@@ -20,16 +20,24 @@ In order to explore the shape of the pattern, which is made by the movement of t
 
 ![alt text][pca]
 
-[pca]: https://github.com/KonakML/SONAR-ML-Acc-Image/blob/master/Pictures/PCA.png "Tracking IMU 3D"
+[pca]: https://github.com/KonakML/SONAR-ML-Acc-Image/blob/master/Pictures/PCA.png "PCA"
 
 ### Windowing
 
-Small images through Windowing --> Heat map to reduce iamge size (like pooling)
+For further preparation we decrease the window size, which allows a faster activity detection, as well as reduced resources and energy needs. An interesting approach is also to convert the line segments into a density map. This helps to further decrease the image size (like pooling):
+
+![alt text][heatmap]
+
+[heatmap]: https://github.com/KonakML/SONAR-ML-Acc-Image/blob/master/Pictures/heatmap.png "Heatmap"
 
 ### Image Classification
 
-fastAI --> resnet32 or resnet50 transfer learning, just last layer train again
+Image classification is done by the deep learning library fastAI. We used a pretained resnet32 (or resnet50) as a basis (transfer learning) and just trained the last layer.
 
 ### Sequencing
 
-Overlapping images --> HMM, LSTM
+To make sure that it classifies the right activity we tried different overlapping window sizes (2, 4, 8, ... sec). The more it was concluded the same activity the higher the likelood of having the right activity. (HMM, LSTM)?
+
+## Conclusion
+
+Faster, more accurate, less parameters, less training time, ...? It has to be compared with state-of-the-art solutions.
