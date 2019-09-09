@@ -8,7 +8,9 @@ The classification of the activities is accomplished by the following steps.
 
 ### Data Transformation
 
-The Raw Acceleration Data is transformed to position data by integrating two times --> Contour Plot
+The Raw Acceleration Data is transformed to position data by integrating two times. Starting point is the origin. We get a data point in each timestemp in 3D.
+
+
 
 ### Dimensionality Reduction
 
