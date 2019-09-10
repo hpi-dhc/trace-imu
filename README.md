@@ -32,7 +32,7 @@ For further preparation we decrease the window size, which allows a faster activ
 
 ### Image Classification
 
-Image classification is done by the deep learning library fastAI. We used a pretained resnet32 (or resnet50) as a basis (transfer learning) and just trained the last layer.
+Image classification is done by the deep learning library fastAI. We used a pretained resnet32 (or resnet50) as a basis (transfer learning) and just trained the last layer. Another alternative is to go for Neural Architecture Search (NAS), maybe ENAS.
 
 ### Sequencing
 
