@@ -14,9 +14,11 @@ The Raw Acceleration Data is transformed to position data by integrating two tim
 
 [tracking]: https://github.com/KonakML/SONAR-ML-Acc-Image/blob/master/Pictures/tracking_imu.jpg "Tracking IMU 3D"
 
+Transforming the time series into images allows to make usage of everything which already exists on imaages, like CNN. We can also make usage of GANs to generate more "data".
+
 ### Dimensionality Reduction
 
-In order to explore the shape of the pattern, which is made by the movement of the nurse, we transform the 3D to 2D by using PCA:
+We can work on the 3D images or in order to explore the shape of the pattern, which is made by the movement of the nurse, we transform the 3D to 2D by using PCA:
 
 ![alt text][pca]
 
@@ -36,7 +38,7 @@ Image classification is done by the deep learning library fastAI. We used a pret
 
 ### Sequencing
 
-To make sure that it classifies the right activity we tried different overlapping window sizes (2, 4, 8, ... sec). The more it was concluded the same activity the higher the likelood of having the right activity. (HMM, LSTM)?
+To make sure that it classifies the right activity we tried different overlapping window sizes (2, 4, 8, ... sec). The more it was concluded the same activity the higher the likelood of having the right activity. (HMM, CNN-LSTM)?
 
 ## Conclusion
 
