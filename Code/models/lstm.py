@@ -26,7 +26,7 @@ class LSTM:
 
     def create_model(self):
         model = Sequential()
-        i = 1[]
+        i = 1
         model.add(LSTM_Layer(self.lstm_layers[0], input_shape=self.input_shape,
                              return_sequences=False if len(self.lstm_layers) == i else True))
         for lstm_layer in self.lstm_layers[1:]:
@@ -41,7 +41,7 @@ class LSTM:
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         self.model = model
 
-    def fit(self, X, y, X_valid, y_valid, epochs=60, batch_size=64):
+    def fit(self, X, y, X_valid, y_valid, epochs=100, batch_size=64):
         chk = ModelCheckpoint('best_lstm_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
         self.model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[chk], validation_data=(X_valid, y_valid))

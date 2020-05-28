@@ -1,5 +1,6 @@
 import pickle as pkl
 import os
+import numpy as np
 import argparse
 from models.cnn import CNN
 from models.lstm import LSTM
@@ -46,10 +47,6 @@ if args['model'] == 'CNN':
     dataset = ImageDataset(args['dataset'], PARAMETERS, modalities)
     folds, X, y = dataset.get_dataset()
     model = CNN('1', y.shape[1], X.shape[1:], augmentation=augmentation_options)
-    for i, (train, val) in enumerate(folds):
-        print("Training Fold", i)
-        model.create_model()
-        model.fit(X[train], y[train], X[val], y[val])
 
 elif args['model'] == 'LSTM':
     if args['data_type'] is not None:
@@ -58,19 +55,18 @@ elif args['model'] == 'LSTM':
         dataset = TimeSeriesDataset(args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset()
     model = LSTM('1', y.shape[1], X.shape[1:])
-    for i, (train, val) in enumerate(folds):
-        print("Training Fold", i)
-        model.create_model()
-        model.fit(X[train], y[train], X[val], y[val])
 
 elif args['model'] == 'ConvLSTM':
     dataset = ImageTimeSeriesDataset(args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset()
-    print(X.shape, y.shape)
     model = ConvLSTM('1', y.shape[1], X.shape[1:])
-    for i, (train, val) in enumerate(folds):
-        print("Training Fold", i)
-        model.create_model()
-        model.fit(X[train], y[train], X[val], y[val])
 
+accs = []
+for i, (train, val) in enumerate(folds):
+    print("Training Fold", i)
+    model.create_model()
+    model.fit(X[train], y[train], X[val], y[val])
+    accs.append(model.evaluate(X[val], y[val]))
+    print("Current average accuracy:", accs[-1])
+print("Final Accuracy:", np.mean(accs))
 

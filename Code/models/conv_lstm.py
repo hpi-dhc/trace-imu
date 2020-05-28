@@ -49,7 +49,7 @@ class ConvLSTM:
         model.summary()
         self.model = model
 
-    def fit(self, X, y, X_valid, y_valid, epochs=100, batch_size=32):
+    def fit(self, X, y, X_valid, y_valid, epochs=200, batch_size=32):
         chk = ModelCheckpoint('best_convlstm_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
         self.model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[chk],
