@@ -89,7 +89,7 @@ class ImageDataset:
     def get_dataset(self, k_fold=True):
         self.window_split()
         x, y, file_ids = self.prepare_labels()
-        self.enc = list(set(y))
+        self.enc = sorted([l for l in self.labels if l not in self.exclude])
         if k_fold:
             folds = self.k_fold(file_ids)
             return folds, x, self.encode(y)
@@ -107,10 +107,10 @@ class TimeSeriesDataset(ImageDataset):
     def window_split(self):
         if self.kind == 'trajectory':
             if self.modalities is None:
-                self.modalities = [1]
+                self.modalities = [0, 1, 2, 3, 4, 5]
         elif self.kind == 'raw':
             if self.modalities is None:
-                self.modalities = [0, 1, 2, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+                self.modalities = np.arange(60)#[0, 1, 2, 15, 16, 17, 18, 19, 20, 21, 22, 23]
         else:
             raise ValueError("No such kind: " + self.kind)
         super().window_split()
@@ -147,11 +147,11 @@ class TimeSeriesDataset(ImageDataset):
 class ImageTimeSeriesDataset(ImageDataset):
     def window_split(self):
         if self.modalities is None:
-            self.modalities = [1]
+            self.modalities = [0, 1, 2, 3, 4, 5]
         windowed_set = {}
         for key, value in self.data.items():
             windowed_set[key] = np.vsplit(value[:, self.modalities],
-                                          [i for i in range(self.window_length // 4, len(value), self.window_length // 4)])
+                                          [i for i in range(self.window_length // 2, len(value), self.window_length // 2)])
         self.data = windowed_set
 
     def prepare_labels(self):
@@ -171,11 +171,26 @@ class ImageTimeSeriesDataset(ImageDataset):
                 labels.append(current_label[1])
                 file_ids.append(label)
 
+
+
         x = np.array(self.flatten_dict()[1])
         selector = np.invert(np.isin(labels, list(self.exclude)))
-        x = np.array([self.to_image(i) for i in np.array(x)[selector]])
-        y = np.array(labels)[selector][3:]
-        file_ids = np.array(file_ids)[selector][3:]
-        x = np.array([[x[i+j] for j in range(4)] for i in range(len(x)-3)])
-
-        return x, y, file_ids
+        x = np.array([self.to_image(i) for i in x[selector]])
+        
+        s_length = 4
+        current_label = ''
+        output = ([], [], [])
+        for img, label, file_id in zip(x, np.array(labels)[selector], np.array(file_ids)[selector]):
+            if label != current_label:
+                buf = np.zeros((s_length,) + img.shape)
+                current_label = label
+            buf[:s_length-1] = buf[1:]
+            buf[s_length-1] = img
+            output[0].append(buf)
+            output[1].append(current_label)
+            output[2].append(file_id)
+        #y = np.array(labels)[selector][3:]
+        #file_ids = np.array(file_ids)[selector][3:]
+        #x = np.array([[x[i+j] for j in range(4)] for i in range(len(x)-3)])
+        x, y, f = output
+        return np.array(x), y, f

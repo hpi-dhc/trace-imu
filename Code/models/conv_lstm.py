@@ -5,6 +5,8 @@ from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 
 import numpy as np
+import pandas as pd
+import tensorflow as tf
 
 from sklearn.metrics import accuracy_score
 
@@ -55,6 +57,12 @@ class ConvLSTM:
         self.model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[chk],
                        validation_data=(X_valid, y_valid))
 
-    def evaluate(self, X, y):
+    def evaluate(self, X, y, enc):
         model = load_model('best_convlstm_' + self.id + '.pkl')
-        return accuracy_score([np.argmax(t) for t in y], model.predict_classes(X))
+        y_pred = model.predict_classes(X)
+        y_true = [np.argmax(t) for t in y]
+        acc = accuracy_score(y_true, y_pred)
+        conf = tf.math.confusion_matrix(labels=y_true, predictions=y_pred).numpy()
+        #con_mat_norm = np.around(conf.astype('float') / conf.sum(axis=1)[:, np.newaxis], decimals=2)
+        #con_mat_df = pd.DataFrame(con_mat_norm, index=enc, columns=enc)
+        return acc, conf

@@ -7,7 +7,7 @@ from models.lstm import LSTM
 from models.conv_lstm import ConvLSTM
 from data import ImageDataset, TimeSeriesDataset, ImageTimeSeriesDataset
 
-GPU = 2
+GPU = 1 
 if GPU is not None:
     os.environ["CUDA_VISIBLE_DEVICES"] = str(GPU)
 else:
@@ -60,13 +60,21 @@ elif args['model'] == 'ConvLSTM':
     dataset = ImageTimeSeriesDataset(args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset()
     model = ConvLSTM('1', y.shape[1], X.shape[1:])
-
+print(X.shape)
 accs = []
+confusions = []
 for i, (train, val) in enumerate(folds):
     print("Training Fold", i)
     model.create_model()
     model.fit(X[train], y[train], X[val], y[val])
-    accs.append(model.evaluate(X[val], y[val]))
-    print("Current average accuracy:", accs[-1])
-print("Final Accuracy:", np.mean(accs))
+    acc, conf = model.evaluate(X[val], y[val], dataset.enc)
+    accs.append(acc)
+    confusions.append(conf)
+    print("Current average accuracy:", np.mean(acc))
 
+
+print(dataset.enc)
+print("Final Accuracy:", np.mean(accs))
+for i in range(len(confusions)):
+    print("Fold", i, "Accuracy:", accs[i])
+    print(confusions[i])

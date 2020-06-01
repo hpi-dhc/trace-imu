@@ -5,6 +5,8 @@ from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
 
 import numpy as np
+import pandas as pd
+import tensorflow as tf
 
 from sklearn.metrics import accuracy_score
 
@@ -12,7 +14,7 @@ from sklearn.metrics import accuracy_score
 class CNN:
     def __init__(self, id, num_classes, input_shape=(1, 64, 64),
                  dense_layers=None, conv_layers=None, augmentation=None,
-                 learning_rate=0.0001):
+                 learning_rate=0.001):
 
         if dense_layers is None:
             dense_layers = [256]
@@ -45,7 +47,7 @@ class CNN:
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         self.model = model
 
-    def fit(self, X, y, X_valid, y_valid, epochs=250, batch_size=32):
+    def fit(self, X, y, X_valid, y_valid, epochs=400, batch_size=32):
         chk = ModelCheckpoint('best_cnn_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
 
@@ -59,6 +61,13 @@ class CNN:
                                      epochs=epochs, callbacks=[chk], steps_per_epoch=len(X) // batch_size * 2,
                                      validation_data=(X_valid, y_valid))
 
-    def evaluate(self, X, y):
+    def evaluate(self, X, y, enc):
         model = load_model('best_cnn_' + self.id + '.pkl')
-        return accuracy_score([np.argmax(t) for t in y], model.predict_classes(X))
+        y_pred = model.predict_classes(X)
+        y_true = [np.argmax(t) for t in y]
+        acc = accuracy_score(y_true, y_pred)
+        conf = tf.math.confusion_matrix(labels=y_true, predictions=y_pred).numpy()
+        con_mat_norm = np.around(conf.astype('float') / conf.sum(axis=1)[:, np.newaxis], decimals=2)
+        con_mat_df = pd.DataFrame(con_mat_norm, index=enc, columns=enc)
+        print(enc, con_mat_df)
+        return acc, con_mat_df
