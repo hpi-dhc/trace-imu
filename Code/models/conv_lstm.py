@@ -13,13 +13,13 @@ from sklearn.metrics import accuracy_score
 
 class ConvLSTM:
     def __init__(self, id, num_classes, input_shape=(4, 1, 64, 64),
-                 dense_layers=None, conv_layers=None,
-                 learning_rate=0.0001):
+                 dense_layers=None, conv_layers=None, augmentation=None,
+                 learning_rate=0.00001):
 
         if dense_layers is None:
             dense_layers = [512, 256]
         if conv_layers is None:
-            conv_layers = [(16, 5), (8, 3)]
+            conv_layers = [(16, 5), (32, 3)]
         assert len(conv_layers) > 0, "At least one convolutional layer is required."
 
         self.id = id
@@ -28,6 +28,7 @@ class ConvLSTM:
         self.num_classes = num_classes
         self.dense_layers = dense_layers  # List of layer sizes
         self.conv_layers = conv_layers  # List of tuples with (channels, kernel_size)
+        self.augmentation = augmentation
 
     def create_model(self):
         model = Sequential()
@@ -51,10 +52,33 @@ class ConvLSTM:
         model.summary()
         self.model = model
 
-    def fit(self, X, y, X_valid, y_valid, epochs=200, batch_size=32):
+    def fit(self, X, y, X_valid, y_valid, epochs=100, batch_size=32):
         chk = ModelCheckpoint('best_convlstm_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
-        self.model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[chk],
+        if self.augmentation is not None:
+            print("Augmenting Data...")
+            from tqdm import tqdm
+            from scipy import ndimage
+            import cv2
+            X = list(X)
+            y = list(y)
+            n = len(X) * 3 // 2
+            for i in tqdm(range(n)):
+                flipcodes = []
+                if self.augmentation.get('horizontal_flip', False):
+                    flipcodes.append(0)
+                elif self.augmentation.get('vertical_flip', False):
+                    flipcodes.append(1)
+                if self.augmentation.get('horizontal_flip', False) and self.augmentation.get('vertical_flip', False):
+                    flipcodes.append(-1)
+                flip = np.random.choice(flipcodes)
+                rot = np.random.randint(-self.augmentation.get('rotation_range',0), self.augmentation.get('rotation_range', 0)+1)
+
+                X.append([[ndimage.rotate(cv2.flip(img, flip), rot, reshape=False) for img in imgs] for imgs in X[i]])
+                y.append(y[i])
+            
+
+        self.model.fit(np.array(X), np.array(y), epochs=epochs, batch_size=batch_size, callbacks=[chk],
                        validation_data=(X_valid, y_valid))
 
     def evaluate(self, X, y, enc):
