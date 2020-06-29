@@ -2,7 +2,6 @@ import pickle as pkl
 import os
 import numpy as np
 import sys
-np.set_printoptions(threshold=sys.maxsize)
 import argparse
 from models.cnn import CNN
 from models.lstm import LSTM
@@ -13,9 +12,10 @@ from data import ImageDataset, TimeSeriesDataset, ImageTimeSeriesDataset
 from keras import Model
 
 
+np.set_printoptions(threshold=sys.maxsize)
 ap = argparse.ArgumentParser()
-ap.add_argument("--dataset", required=True, help="the dataset to train on",
-                choices=['biomotion', 'dip_imu'])
+ap.add_argument("--dataset", required=True, help="the dataset to train on", default='dip_imu',
+                choices=['accad', 'biomotion', 'dip_imu', 'mixamo', 'ssm', 'transition'])
 ap.add_argument("--model", required=True, help="the model to be used for training",
                 choices=['CNN', 'LSTM', 'ConvLSTM', 'ConvLSTM1D', 'ResnetLSTM'])
 ap.add_argument("--horizontal_flip", help="data augmentation option for CNN training", action='store_true')
@@ -24,9 +24,10 @@ ap.add_argument("--rotation_range", type=int, help="data augmentation option for
 #ap.add_argument("--discrete", help="whether to generate binary or continuous heatmap pixels in CNN training", action='store_true')
 ap.add_argument("--modalities", help="comma-separated list of modalities to use for training")
 ap.add_argument("--data_type", help="type of data input for LSTM training", choices=["raw", "trajectory"])
-ap.add_argument("--subjects", help="subjects to be included for training")
+ap.add_argument("--subjects", help="comma-separated list of subjects to be included for training")
 ap.add_argument("--gpu", help="select GPU to train on, otherwise use CPU")
-ap.add_argument("--data_path", required=True, help="select GPU to train on")
+ap.add_argument("--data_path", required=True, help="path of npz files and params.pkl for training")
+ap.add_argument("--model_id", default='1', help="specify model id to prevent file conflicts of 2 models training at the same time")
 
 args = vars(ap.parse_args())
 
@@ -57,7 +58,7 @@ if args['vertical_flip']:
 if args['model'] == 'CNN':
     dataset = ImageDataset(args['data_path'], args['dataset'], PARAMETERS, modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
-    model = CNN('1', y.shape[1], X.shape[1:], augmentation=augmentation_options)
+    model = CNN(args['model_id'], y.shape[1], X.shape[1:], augmentation=augmentation_options)
 
 elif args['model'] == 'ConvLSTM1D':
     if args['data_type'] is not None:
@@ -65,7 +66,7 @@ elif args['model'] == 'ConvLSTM1D':
     else:
         dataset = TimeSeriesDataset(args['data_path'], args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
-    model = ConvLSTM1D('2', y.shape[1], X.shape[1:])
+    model = ConvLSTM1D(args['model_id'], y.shape[1], X.shape[1:])
 
 elif args['model'] == 'LSTM':
     if args['data_type'] is not None:
@@ -73,17 +74,17 @@ elif args['model'] == 'LSTM':
     else:
         dataset = TimeSeriesDataset(args['data_path'], args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
-    model = LSTM('2', y.shape[1], X.shape[1:])
+    model = LSTM(args['model_id'], y.shape[1], X.shape[1:])
 
 elif args['model'] == 'ConvLSTM':
     dataset = ImageTimeSeriesDataset(args['data_path'], args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
-    model = ConvLSTM('1', y.shape[1], X.shape[1:], augmentation=augmentation_options)
+    model = ConvLSTM(args['model_id'], y.shape[1], X.shape[1:], augmentation=augmentation_options)
 
 elif args['model'] == 'ResnetLSTM':
     dataset = ImageTimeSeriesDataset(args['data_path'], args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
-    model = ResnetLSTM('1', y.shape[1], X.shape[1:])
+    model = ResnetLSTM(args['model_id'], y.shape[1], X.shape[1:])
 print(X.shape)
 accs = []
 confusions = []
