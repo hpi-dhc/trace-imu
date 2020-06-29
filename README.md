@@ -20,6 +20,10 @@ pip install git+https://github.com/nghorbani/configer
 
 pip install git+https://github.com/nghorbani/human_body_prior
 
+### Starting Example
+
+python train.py --dataset dip_imu --model ConvLSTM --data_path /home/Orhan.Konak/netstore/Data/ --gpu 1 --horizontal_flip
+
 ## Classification
 
 The classification of the activities is accomplished by the following steps.
