@@ -5,13 +5,13 @@ from keras.preprocessing import sequence
 
 
 class ImageDataset:
-    def __init__(self, source, params, modalities=None, modifier=''):
+    def __init__(self, path, source, params, modalities=None, modifier=''):
         self.params = params
         self.labels = self.params[source]['labels']
         self.exclude = self.params[source]['exclude']
         self.subjects = self.params[source]['subjects']
         self.window_length = self.params[source]['window_length']
-        self.data = dict(np.load('/home/Pit.Wegner/netstore/IIC/data/' + source + modifier + '.npz', allow_pickle=True))
+        self.data = dict(np.load(path + source + modifier + '.npz', allow_pickle=True))
         self.modalities = modalities
 
     def window_split(self):
@@ -99,20 +99,20 @@ class ImageDataset:
 
 
 class TimeSeriesDataset(ImageDataset):
-    def __init__(self, source, params, modalities=None, kind='trajectory'):
+    def __init__(self, path, source, params, modalities=None, kind='trajectory'):
         self.kind = kind
         modifier = ''
         if self.kind == 'raw':
             modifier = '_acc_ori'
-        super().__init__(source, params, modalities, modifier)
+        super().__init__(source, path, params, modalities, modifier)
 
     def window_split(self):
         if self.kind == 'trajectory':
             if self.modalities is None:
-                self.modalities = [1] #np.arange(6)
+                self.modalities = np.arange(6)
         elif self.kind == 'raw':
             if self.modalities is None:
-                self.modalities = [0, 1, 2, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+                self.modalities = np.arange(60)
         else:
             raise ValueError("No such kind: " + self.kind)
         super().window_split()
@@ -151,7 +151,7 @@ class TimeSeriesDataset(ImageDataset):
 class ImageTimeSeriesDataset(ImageDataset):
     def window_split(self):
         if self.modalities is None:
-            self.modalities = np.arange(6) #[1]
+            self.modalities = np.arange(6)
         windowed_set = {}
         for key, value in self.data.items():
             windowed_set[key] = np.vsplit(value[:, self.modalities],
