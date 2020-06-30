@@ -2,6 +2,28 @@
 
 SONAR (Service Oriented Nursing Activity Recignition) assists nurses by getting rid of the documentation burden and supports the nurse-patient interaction. SONAR uses acceleration data coming from the nurses physical activities.
 
+## Installation Prerequisites
+
+conda create --name name_of_your_choice python=3.7
+
+conda activate name_of_your_choice
+
+conda install -c anaconda pandas scikit-learn tensorflow-gpu=2.1.0
+
+conda install -c conda-forge keras opencv
+
+change line 506 of /path/to/env/lib/python3.7/site-packages/keras/backend/tensorflow_backend.py from
+_LOCAL_DEVICES = tf.config.experimental_list_devices() to
+_LOCAL_DEVICES = [x.name for x in tf.config.list_logical_devices()]
+
+pip install git+https://github.com/nghorbani/configer
+
+pip install git+https://github.com/nghorbani/human_body_prior
+
+### Starting Example
+
+python train.py --dataset dip_imu --model ConvLSTM --data_path /home/Orhan.Konak/netstore/Data/ --gpu 1 --horizontal_flip
+
 ## Classification
 
 The classification of the activities is accomplished by the following steps.
