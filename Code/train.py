@@ -14,7 +14,7 @@ from keras import Model
 
 np.set_printoptions(threshold=sys.maxsize)
 ap = argparse.ArgumentParser()
-ap.add_argument("--dataset", required=True, help="the dataset to train on", default='dip_imu',
+ap.add_argument("--dataset", help="the dataset to train on", default='dip_imu',
                 choices=['accad', 'biomotion', 'dip_imu', 'mixamo', 'ssm', 'transition'])
 ap.add_argument("--model", required=True, help="the model to be used for training",
                 choices=['CNN', 'LSTM', 'ConvLSTM', 'ConvLSTM1D', 'ResnetLSTM'])
@@ -23,7 +23,7 @@ ap.add_argument("--vertical_flip", help="data augmentation option for CNN traini
 ap.add_argument("--rotation_range", type=int, help="data augmentation option for CNN training")
 #ap.add_argument("--discrete", help="whether to generate binary or continuous heatmap pixels in CNN training", action='store_true')
 ap.add_argument("--modalities", help="comma-separated list of modalities to use for training")
-ap.add_argument("--data_type", help="type of data input for LSTM training", choices=["raw", "trajectory"])
+ap.add_argument("--data_type", help="type of data input for LSTM training", default="raw", choices=["raw", "trajectory"])
 ap.add_argument("--subjects", help="comma-separated list of subjects to be included for training")
 ap.add_argument("--gpu", help="select GPU to train on, otherwise use CPU")
 ap.add_argument("--data_path", required=True, help="path of npz files and params.pkl for training")
@@ -85,6 +85,7 @@ elif args['model'] == 'ResnetLSTM':
     dataset = ImageTimeSeriesDataset(args['data_path'], args['dataset'], PARAMETERS, modalities=modalities)
     folds, X, y = dataset.get_dataset(include=subjects)
     model = ResnetLSTM(args['model_id'], y.shape[1], X.shape[1:])
+
 print(X.shape)
 accs = []
 confusions = []

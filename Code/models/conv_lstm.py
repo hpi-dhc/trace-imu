@@ -51,11 +51,12 @@ class ConvLSTM:
         model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
         model.summary()
         self.model = model
+        model.save('convlstm.h5')
 
     def fit(self, X, y, X_valid, y_valid, epochs=100, batch_size=32):
         chk = ModelCheckpoint('best_convlstm_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
-        if self.augmentation is not None:
+        if self.augmentation != {}:
             print("Augmenting Data...")
             from tqdm import tqdm
             from scipy import ndimage

@@ -47,12 +47,12 @@ class ConvLSTM1D:
         self.model = model
 
     def fit(self, X, y, X_valid, y_valid, epochs=100, batch_size=64):
-        chk = ModelCheckpoint('best_lstm_' + self.id + '.pkl', monitor='val_accuracy',
+        chk = ModelCheckpoint('best_convlstm1d_' + self.id + '.pkl', monitor='val_accuracy',
                               save_best_only=True, mode='max', verbose=1)
         self.model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[chk], validation_data=(X_valid, y_valid))
 
     def evaluate(self, X, y, enc):
-        model = load_model('best_lstm_' + self.id + '.pkl')
+        model = load_model('best_convlstm1d_' + self.id + '.pkl')
         y_pred = model.predict_classes(X)
         y_true = [np.argmax(t) for t in y]
         acc = accuracy_score(y_true, y_pred)

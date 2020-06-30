@@ -104,7 +104,7 @@ class TimeSeriesDataset(ImageDataset):
         modifier = ''
         if self.kind == 'raw':
             modifier = '_acc_ori'
-        super().__init__(source, path, params, modalities, modifier)
+        super().__init__(path, source, params, modalities, modifier)
 
     def window_split(self):
         if self.kind == 'trajectory':
