@@ -1,10 +1,12 @@
 import numpy as np
 import sys
+import pandas as pd
 from tqdm import tqdm
 
 name = sys.argv[1]
 
-amass_path = 'netstore/IIC/data/'
+#amass_path = '/home/Pit.Wegner/netstore/IIC/data/'
+amass_path = ''
 data = np.load(amass_path + name + '_trajectories.npz', allow_pickle=True)
 dataset = {}
 for key in tqdm(set(data['labels'])):
@@ -40,6 +42,6 @@ def relabel(path='labels.csv'):
     return to_export
 
 if name == 'dip_imu':
-    dataset = relabel(amass_path + 'labels.csv')
+    dataset = relabel('/home/Pit.Wegner/netstore/IIC/data/' + 'labels.csv')
 
 np.savez(name + '.npz', **dataset)

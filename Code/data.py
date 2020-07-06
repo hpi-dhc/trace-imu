@@ -1,21 +1,22 @@
 import numpy as np
+import cv2
 from sklearn.decomposition import PCA
 from keras.preprocessing import sequence
 
 
 class ImageDataset:
-    def __init__(self, source, params, modalities=None, modifier=''):
+    def __init__(self, path, source, params, modalities=None, modifier=''):
         self.params = params
         self.labels = self.params[source]['labels']
         self.exclude = self.params[source]['exclude']
         self.subjects = self.params[source]['subjects']
         self.window_length = self.params[source]['window_length']
-        self.data = dict(np.load('/home/Pit.Wegner/netstore/IIC/data/' + source + modifier + '.npz', allow_pickle=True))
+        self.data = dict(np.load(path + source + modifier + '.npz', allow_pickle=True))
         self.modalities = modalities
 
     def window_split(self):
         if self.modalities is None:
-            self.modalities = [1]
+            self.modalities = np.arange(6)
         windowed_set = {}
         for key, value in self.data.items():
             windowed_set[key] = np.vsplit(value[:, self.modalities],
@@ -37,6 +38,7 @@ class ImageDataset:
                 continue
             pca = PCA(n_components=2)
             s2d = pca.fit_transform(ss[:, s, :])
+            #s2d = ss[:, s, 1:]
             image = np.zeros((size, size))
             for point in s2d:
                 coords = np.floor((point + 1) * (size // 2)).astype(int)
@@ -86,31 +88,31 @@ class ImageDataset:
             targets[i, self.enc.index(y[i])] = 1
         return targets
 
-    def get_dataset(self, k_fold=True):
+    def get_dataset(self, k_fold=True, include=None):
         self.window_split()
         x, y, file_ids = self.prepare_labels()
         self.enc = sorted([l for l in self.labels if l not in self.exclude])
         if k_fold:
-            folds = self.k_fold(file_ids)
+            folds = self.k_fold(file_ids, include)
             return folds, x, self.encode(y)
         return x, self.encode(y)
 
 
 class TimeSeriesDataset(ImageDataset):
-    def __init__(self, source, params, modalities=None, kind='trajectory'):
+    def __init__(self, path, source, params, modalities=None, kind='trajectory'):
         self.kind = kind
         modifier = ''
         if self.kind == 'raw':
             modifier = '_acc_ori'
-        super().__init__(source, params, modalities, modifier)
+        super().__init__(path, source, params, modalities, modifier)
 
     def window_split(self):
         if self.kind == 'trajectory':
             if self.modalities is None:
-                self.modalities = [0, 1, 2, 3, 4, 5]
+                self.modalities = np.arange(6)
         elif self.kind == 'raw':
             if self.modalities is None:
-                self.modalities = np.arange(60)#[0, 1, 2, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+                self.modalities = np.arange(60)
         else:
             raise ValueError("No such kind: " + self.kind)
         super().window_split()
@@ -127,7 +129,9 @@ class TimeSeriesDataset(ImageDataset):
                         current_label = (lab.index(l), l)
                 except ValueError:
                     pass # substring not found -> label is ''
-
+            if current_label[1] == '':
+                print(label, lab, self.labels)
+                exit(1)
             for _ in range(len(seqs)):
                 labels.append(current_label[1])
                 file_ids.append(label)
@@ -147,7 +151,7 @@ class TimeSeriesDataset(ImageDataset):
 class ImageTimeSeriesDataset(ImageDataset):
     def window_split(self):
         if self.modalities is None:
-            self.modalities = [0, 1, 2, 3, 4, 5]
+            self.modalities = np.arange(6)
         windowed_set = {}
         for key, value in self.data.items():
             windowed_set[key] = np.vsplit(value[:, self.modalities],
@@ -175,6 +179,7 @@ class ImageTimeSeriesDataset(ImageDataset):
 
         x = np.array(self.flatten_dict()[1])
         selector = np.invert(np.isin(labels, list(self.exclude)))
+        #from keras.applications.xception import preprocess_input
         x = np.array([self.to_image(i) for i in x[selector]])
         
         s_length = 4
@@ -189,6 +194,21 @@ class ImageTimeSeriesDataset(ImageDataset):
             output[0].append(buf)
             output[1].append(current_label)
             output[2].append(file_id)
+        '''
+        from scipy import ndimage
+        # Data Augmentation
+        for i in range(len(output[0])):
+            flip = np.random.randint(0, 2) * 2 - 1
+            rot = np.random.randint(5, 90)
+            output[0].append([[cv2.flip(img, flip) for img in imgs] for imgs in output[0][i]])
+            output[1].append(output[1][i])
+            output[2].append(output[2][i])
+
+            output[0].append([[ndimage.rotate(img, rot, reshape=False) for img in imgs] for imgs in output[0][i]])
+            output[1].append(output[1][i])
+            output[2].append(output[2][i])
+        print(np.array(output[0]).shape)
+        '''
         #y = np.array(labels)[selector][3:]
         #file_ids = np.array(file_ids)[selector][3:]
         #x = np.array([[x[i+j] for j in range(4)] for i in range(len(x)-3)])

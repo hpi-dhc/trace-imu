@@ -20,13 +20,13 @@ num_dmpls = 8 # number of DMPL parameters
 bm = BodyModel(bm_path=bm_path, num_betas=num_betas, num_dmpls=num_dmpls, path_dmpl=dmpl_path).to(comp_device)
 faces = c2c(bm.f)
 
-amass_path = 'netstore/IIC/data/'
-#amass_path = ''
+#amass_path = 'netstore/IIC/data/'
+amass_path = ''
 bdata = [np.load(amass_path + name + '_training_results.npz', allow_pickle=True), np.load(amass_path + name + '_validation_results.npz', allow_pickle=True)]
-data = [np.load(amass_path + name + '_training.npz', allow_pickle=True), np.load(amass_path + name + '_validation.npz', allow_pickle=True)]
+data = [np.load(amass_path + '/home/Pit.Wegner/netstore/IIC/data/' + name + '_training.npz', allow_pickle=True), np.load(amass_path + '/home/Pit.Wegner/netstore/IIC/data/' + name + '_validation.npz', allow_pickle=True)]
 if name == 'dip_imu':
     bdata.append(np.load(amass_path + name + '_test_results.npz', allow_pickle=True))
-    data.append(np.load(amass_path + name + '_test.npz', allow_pickle=True))
+    data.append(np.load(amass_path + '/home/Pit.Wegner/netstore/IIC/data/' + name + '_test.npz', allow_pickle=True))
 bdata = {
     'prediction': np.concatenate([i['prediction'] for i in bdata])
 }
@@ -40,7 +40,7 @@ unique_names.sort() #set(["_".join(i.split("_")[:-1][1:]).translate({ord(ch): No
 vertices = [1962, 5431, 1096, 4583, 412, 3021]
 positions = []
 print(len(unique_names))
-for n in tqdm(range(len(unique_names) // 2)):
+for n in tqdm(range(len(unique_names))):
     #if n in done:
     #    print(n, 'skipped')
     #    continue
@@ -67,4 +67,4 @@ for n in tqdm(range(len(unique_names) // 2)):
             positions[-1][v].append(body.v[0,vertices[v]].detach().numpy())
 positions = np.array(positions)
 print(positions.shape, len(unique_names))
-np.savez(name + '_-1_trajectories.npz', positions=positions, labels=unique_names)
+np.savez(name + '_trajectories.npz', positions=positions, labels=unique_names)
