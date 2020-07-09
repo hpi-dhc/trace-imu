@@ -28,5 +28,8 @@ python train.py --dataset dip_imu --model ConvLSTM --data_path /home/Orhan.Konak
 
 ## Classification
 
+![alt text][trajectory]
+[tracking]: https://github.com/hpi-dhc/trace-imu/blob/master/Images/trajectory.pdf "Generating Trajectory"
+
 ![alt text][pipeline]
-[tracking]: https://github.com/KonakML/SONAR-ML-Acc-Image/blob/master/Pictures/tracking_imu.jpg "Tracking IMU 3D"
+[tracking]: https://github.com/hpi-dhc/trace-imu/blob/master/Images/pipeline.pdf "Classification Pipeline"
