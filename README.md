@@ -1,4 +1,4 @@
-# SONAR-ML-Acc-Image
+# TRACE-IMU
 
 SONAR (Service Oriented Nursing Activity Recignition) assists nurses by getting rid of the documentation burden and supports the nurse-patient interaction. SONAR uses acceleration data coming from the nurses physical activities.
 
