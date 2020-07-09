@@ -23,7 +23,7 @@ pip install git+https://github.com/nghorbani/human_body_prior
 ### Starting Example
 
 ```
-python train.py --dataset dip_imu --model ConvLSTM --data_path /home/Orhan.Konak/netstore/Data/ --gpu 1 --horizontal_flip
+python train.py --dataset dip_imu --model ConvLSTM --data_path ../Data/ --gpu 1 --horizontal_flip
 ```
 
 ## Classification
